@@ -6,8 +6,11 @@ import {
   FiCheck,
 } from "react-icons/fi";
 
+import { toast } from "sonner";
+
 import StepIndicator from "../components/common/StepIndicator";
 import ProgressLine from "../components/common/ProgressLine";
+import Button from "../components/common/Button";
 
 import EssentialInformation from "../components/onboarding/EssentialInformation";
 import OrganizationAddress from "../components/onboarding/OrganizationAddress";
@@ -18,6 +21,9 @@ import ReviewConfirmation from "../components/onboarding/ReviewConfirmation";
 import { validateOnboardingStep } from "../utils/onboardingValidation";
 
 import { steps } from "../constants/onboardingSteps";
+
+import axiosInstance from "../api/axiosInstance";
+import { registerOrganization } from "../services/authService";
 
 const OrganizationOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -59,6 +65,7 @@ const OrganizationOnboarding = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -92,7 +99,7 @@ const OrganizationOnboarding = () => {
     }));
   };
 
-  const handleNext = (event) => {
+  const handleNext = async (event) => {
     event.preventDefault();
 
     const validationErrors = validateOnboardingStep(formData, currentStep);
@@ -103,13 +110,31 @@ const OrganizationOnboarding = () => {
       return;
     }
 
-    if (currentStep === 5) {
-      console.log("Complete Organization Onboarding Payload:", formData);
-
+    if (currentStep < 5) {
+      setCurrentStep((previous) => previous + 1);
       return;
     }
+    setIsSubmitting(true);
+    try {
+      const response = await registerOrganization(formData);
 
-    setCurrentStep((previous) => previous + 1);
+      console.log("Organization registration successful:", response);
+
+      toast.success("Organization created successfully");
+    } catch (error) {
+      console.error("Organization registration failed:", error);
+
+      const responseError = error.response?.data;
+
+      if (responseError?.errors) {
+        setErrors(responseError.errors);
+        return;
+      }
+
+      alert(responseError?.message || "Unable to create organization.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -238,34 +263,31 @@ const OrganizationOnboarding = () => {
             {/* Footer */}
             <div className="flex items-center justify-between border-t border-slate-200 px-5 py-5 sm:px-8">
               {currentStep > 1 ? (
-                <button
+                <Button
                   type="button"
                   onClick={handleBack}
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  variant="secondary"
+                  icon={<FiArrowLeft size={17} />}
+                  iconPosition="left"
                 >
-                  <FiArrowLeft size={17} />
                   Back
-                </button>
+                </Button>
               ) : (
                 <div />
               )}
 
               {currentStep < steps.length ? (
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
+                <Button type="submit" icon={<FiArrowRight size={17} />}>
                   Continue
-                  <FiArrowRight size={17} />
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  loading={isSubmitting}
+                  icon={<FiCheck size={17} />}
                 >
                   Create Organization
-                  <FiCheck size={17} />
-                </button>
+                </Button>
               )}
             </div>
           </form>
