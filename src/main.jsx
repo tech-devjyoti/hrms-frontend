@@ -8,12 +8,12 @@ import App from "./App.jsx";
 import AuthInitializer from "./app/AuthInitializer";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  // <StrictMode>
     <Provider store={store}>
       <AuthInitializer>
         <App />
       </AuthInitializer>
-      <Toaster position="top-right" richColors closeButton />
+      <Toaster position="top-center" richColors />
     </Provider>
-  </StrictMode>,
+  // </StrictMode>,
 );

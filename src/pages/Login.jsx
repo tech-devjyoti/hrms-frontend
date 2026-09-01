@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FiEye, FiEyeOff, FiLogIn, FiShield } from "react-icons/fi";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
@@ -71,11 +71,23 @@ const Login = () => {
     try {
       const response = await loginUser(formData);
 
-      dispatch(loginSuccess(response.data.user));
+      const user = response.data.user;
+
+      dispatch(loginSuccess(user));
 
       toast.success("Login successful.");
 
-      navigate("/dashboard", { replace: true });
+      if (user.mustChangePassword) {
+        navigate("/change-password", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      navigate("/dashboard", {
+        replace: true,
+      });
     } catch (error) {
       const responseError = error.response?.data;
 
@@ -162,6 +174,15 @@ const Login = () => {
                   autoComplete="current-password"
                   className="pr-11"
                 />
+
+                <div className="flex justify-end">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
 
                 <button
                   type="button"
