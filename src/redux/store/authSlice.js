@@ -23,6 +23,7 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.isAuthenticated = true;
       state.user = action.payload;
+      state.isInitialized = true;
       state.error = null;
     },
 
@@ -30,6 +31,7 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.isAuthenticated = false;
       state.user = null;
+      state.isInitialized = true;
       state.error = action.payload;
     },
 
@@ -59,6 +61,7 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
       state.isLoading = false;
+      state.isInitialized = true;
       state.error = null;
     },
 
